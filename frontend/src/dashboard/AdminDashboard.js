@@ -6,7 +6,6 @@ export default function AdminDashboard({ token }) {
   const [stores, setStores] = useState([]);
   const [owners, setOwners] = useState([]);
 
-  // 🔹 State for new user
   const [newUser, setNewUser] = useState({
     name: "",
     email: "",
@@ -15,7 +14,6 @@ export default function AdminDashboard({ token }) {
     role: "user",
   });
 
-  // 🔹 State for new store
   const [newStore, setNewStore] = useState({
     name: "",
     email: "",
@@ -23,7 +21,7 @@ export default function AdminDashboard({ token }) {
     owner_id: "",
   });
 
-  // 🔹 State for edit store modal
+  
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editStoreData, setEditStoreData] = useState({
     id: "",
@@ -32,7 +30,7 @@ export default function AdminDashboard({ token }) {
     address: "",
   });
 
-  // 📊 Load dashboard data
+
   useEffect(() => {
     const loadDashboard = async () => {
       const res = await fetch(
@@ -49,7 +47,7 @@ export default function AdminDashboard({ token }) {
     loadDashboard();
   }, [token]);
 
-  // 👥 Load all users
+
   const loadUsers = async () => {
     const res = await fetch(`${process.env.REACT_APP_API_URL}/admin/users`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -57,7 +55,7 @@ export default function AdminDashboard({ token }) {
     setUsers(await res.json());
   };
 
-  // 🗑 Delete user
+
   const deleteUser = async (id) => {
     await fetch(`${process.env.REACT_APP_API_URL}/admin/users/${id}`, {
       method: "DELETE",
@@ -66,7 +64,7 @@ export default function AdminDashboard({ token }) {
     loadUsers();
   };
 
-  // 🏪 Load store owners
+
   const loadOwners = async () => {
     const res = await fetch(`${process.env.REACT_APP_API_URL}/admin/users`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -75,7 +73,7 @@ export default function AdminDashboard({ token }) {
     setOwners(all.filter((u) => u.role === "store_owner"));
   };
 
-  // ➕ Create new user
+
   const createUser = async () => {
     const res = await fetch(`${process.env.REACT_APP_API_URL}/admin/users`, {
       method: "POST",
@@ -95,7 +93,7 @@ export default function AdminDashboard({ token }) {
     }
   };
 
-  //  Create new store
+  
   const createStore = async () => {
     const res = await fetch(`${process.env.REACT_APP_API_URL}/stores`, {
       method: "POST",
@@ -114,8 +112,6 @@ export default function AdminDashboard({ token }) {
       alert(err.message);
     }
   };
-
-  //  Load stores
   const loadStores = async () => {
     const res = await fetch(`${process.env.REACT_APP_API_URL}/stores`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -123,7 +119,7 @@ export default function AdminDashboard({ token }) {
     setStores(await res.json());
   };
 
-  //  Delete store
+  
   const deleteStore = async (id) => {
     await fetch(`${process.env.REACT_APP_API_URL}/stores/${id}`, {
       method: "DELETE",
@@ -132,7 +128,7 @@ export default function AdminDashboard({ token }) {
     loadStores();
   };
 
-  //  Open store edit modal
+  
   const openEditModal = (s) => {
     setEditStoreData({
       id: s.id,
@@ -168,7 +164,7 @@ export default function AdminDashboard({ token }) {
     <div className="space-y-8">
       <h2 className="text-2xl font-bold">Admin Dashboard</h2>
 
-      {/* Stats */}
+    
       <div className="bg-white p-4 rounded shadow flex space-x-6">
         <p>
           <b>Users:</b> {stats.totalUsers}
@@ -298,7 +294,7 @@ export default function AdminDashboard({ token }) {
             className="border p-2"
           >
             <option value="">Select Owner</option>
-            {owners.map((o) => (
+            {owners?.map((o) => (
               <option key={o.id} value={o.id}>
                 {o.name}
               </option>
@@ -404,3 +400,4 @@ export default function AdminDashboard({ token }) {
     </div>
   );
 }
+  
