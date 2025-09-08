@@ -47,7 +47,7 @@ export default function AdminDashboard({ token }) {
       loadOwners();
     };
     loadDashboard();
-  }, [token,loadUsers]);
+  }, [token]);
 
   // 👥 Load all users
   const loadUsers = async () => {
@@ -95,7 +95,7 @@ export default function AdminDashboard({ token }) {
     }
   };
 
-  // ➕ Create new store
+  //  Create new store
   const createStore = async () => {
     const res = await fetch(`${process.env.REACT_APP_API_URL}/stores`, {
       method: "POST",
@@ -115,7 +115,7 @@ export default function AdminDashboard({ token }) {
     }
   };
 
-  // 🏪 Load stores
+  //  Load stores
   const loadStores = async () => {
     const res = await fetch(`${process.env.REACT_APP_API_URL}/stores`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -123,7 +123,7 @@ export default function AdminDashboard({ token }) {
     setStores(await res.json());
   };
 
-  // 🗑 Delete store
+  //  Delete store
   const deleteStore = async (id) => {
     await fetch(`${process.env.REACT_APP_API_URL}/stores/${id}`, {
       method: "DELETE",
@@ -132,7 +132,7 @@ export default function AdminDashboard({ token }) {
     loadStores();
   };
 
-  // ✏️ Open store edit modal
+  //  Open store edit modal
   const openEditModal = (s) => {
     setEditStoreData({
       id: s.id,
@@ -244,7 +244,7 @@ export default function AdminDashboard({ token }) {
             </tr>
           </thead>
           <tbody>
-            {users.map((u) => (
+            {users?.map((u) => (
               <tr key={u.id} className="border-t">
                 <td>{u.id}</td>
                 <td>{u.name}</td>
@@ -328,7 +328,7 @@ export default function AdminDashboard({ token }) {
             </tr>
           </thead>
           <tbody>
-            {stores.map((s) => (
+            {stores?.map((s) => (
               <tr key={s.id} className="border-t">
                 <td>{s.id}</td>
                 <td>{s.name}</td>
