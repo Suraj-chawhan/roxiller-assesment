@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FullStack App</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; }
+h2 { margin-top: 30px; }
+button { cursor: pointer; margin: 5px 0; }
+div.panel { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+input, select { display: block; margin: 5px 0 10px; padding: 5px; width: 100%; max-width: 300px; }
+.user-item, .store-item, .rating-item { display: flex; justify-content: space-between; margin: 5px 0; }
+.delete-btn { color: red; cursor: pointer; margin-left: 10px; }
+#logoutBtn { background-color: #f44336; color: white; padding: 5px 10px; border: none; border-radius: 5px; margin-top: 10px; }
+table { border-collapse: collapse; width: 100%; max-width: 900px; }
+th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+th { background-color: #f2f2f2; }
+</style>
+</head>
+<body>
+
+<h1>FullStack App</h1>
+
+<!-- LOGIN / SIGNUP TOGGLE -->
+<div>
+  <button onclick="showLogin()">Login</button>
+  <button onclick="showSignup()">Signup</button>
+  <button id="logoutBtn" style="display:none" onclick="logout()">Logout</button>
+</div>
+
+<!-- LOGIN FORM -->
+<div id="loginForm" class="panel">
+  <h2>Login</h2>
+  <input type="email" id="loginEmail" placeholder="Email">
+  <input type="password" id="loginPassword" placeholder="Password">
+  <button onclick="login()">Login</button>
+</div>
+
+<!-- SIGNUP FORM -->
+<div id="signupForm" class="panel" style="display:none">
+  <h2>Signup</h2>
+  <input type="text" id="signupName" placeholder="Name (20-60 chars)">
+  <input type="email" id="signupEmail" placeholder="Email">
+  <input type="password" id="signupPassword" placeholder="Password (8-16 chars)">
+  <input type="text" id="signupAddress" placeholder="Address (max 400 chars)">
+  <select id="signupRole">
+    <option value="user">User</option>
+    <option value="store_owner">Store Owner</option>
+  </select>
+  <button onclick="signup()">Signup</button>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="adminPanel" class="panel" style="display:none">
+  <h2>Admin Dashboard</h2>
+  <div>
+    <strong>Total Users:</strong> <span id="totalUsers"></span> |
+    <strong>Total Stores:</strong> <span id="totalStores"></span> |
+    <strong>Total Ratings:</strong> <span id="totalRatings"></span>
+  </div>
+
+  <h3>Create User</h3>
+  <input type="text" id="adminUserName" placeholder="Name">
+  <input type="email" id="adminUserEmail" placeholder="Email">
+  <input type="password" id="adminUserPassword" placeholder="Password">
+  <input type="text" id="adminUserAddress" placeholder="Address">
+  <select id="adminUserRole">
+    <option value="user">User</option>
+    <option value="admin">Admin</option>
+    <option value="store_owner">Store Owner</option>
+  </select>
+  <button onclick="adminCreateUser()">Create User</button>
+
+  <h3>Users</h3>
+  <div id="usersList"></div>
+
+  <h3>Create Store</h3>
+  <input type="text" id="adminStoreName" placeholder="Store Name">
+  <input type="email" id="adminStoreEmail" placeholder="Store Email">
+  <input type="text" id="adminStoreAddress" placeholder="Store Address">
+  <select id="adminStoreOwner"></select>
+  <button onclick="adminCreateStore()">Create Store</button>
+
+  <h3>Stores</h3>
+  <div id="storesListAdmin"></div>
+</div>
+
+<!-- STORE OWNER PANEL -->
+<div id="storePanel" class="panel" style="display:none">
+  <h2>Store Owner Dashboard</h2>
+  <h3>Your Stores</h3>
+  <div id="storesListOwner"></div>
+</div>
+
+<!-- USER PANEL -->
+<div id="userPanel" class="panel" style="display:none">
+  <h2>User Dashboard</h2>
+  <h3>Rate a Store</h3>
+  <select id="ratingStore"></select>
+  <input type="number" id="ratingValue" min="1" max="5" placeholder="Rating 1-5">
+  <button onclick="rateStore()">Submit Rating</button>
+
+  <h3>All Stores</h3>
+  <div id="storesListUser"></div>
+</div>
+
+<script>
+let token = localStorage.getItem('token') || '';
+let role = localStorage.getItem('role') || '';
+let userId = localStorage.getItem('userId') || '';
+
+document.addEventListener('DOMContentLoaded', () => {
+  if(token) showPanels();
+});
+
+// Toggle forms
+function showLogin() { document.getElementById('loginForm').style.display='block'; document.getElementById('signupForm').style.display='none'; }
+function showSignup() { document.getElementById('loginForm').style.display='none'; document.getElementById('signupForm').style.display='block'; }
+
+// LOGIN
+async function login() {
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+  const res = await fetch('/auth/login', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ email,password })
+  });
+  const data = await res.json();
+  if(res.ok){
+    token = data.token; role = data.role; userId = data.user_id;
+    localStorage.setItem('token', token);
+    localStorage.setItem('role', role);
+    localStorage.setItem('userId', userId);
+    alert('Login successful');
+    showPanels();
+  } else alert(data.message);
+}
+
+// SIGNUP
+async function signup() {
+  const name=document.getElementById('signupName').value;
+  const email=document.getElementById('signupEmail').value;
+  const password=document.getElementById('signupPassword').value;
+  const address=document.getElementById('signupAddress').value;
+  const roleSelect=document.getElementById('signupRole').value;
+  const res=await fetch('/auth/register',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ name,email,password,address,role:roleSelect })
+  });
+  const data=await res.json();
+  if(res.ok) alert('Signup successful'); else alert(data.message);
+}
+
+// LOGOUT
+function logout(){
+  localStorage.removeItem('token'); localStorage.removeItem('role'); localStorage.removeItem('userId');
+  token=role=userId='';
+  location.reload();
+}
+
+// Show panels based on role
+function showPanels(){
+  document.getElementById('loginForm').style.display='none';
+  document.getElementById('signupForm').style.display='none';
+  document.getElementById('logoutBtn').style.display='inline-block';
+  if(role==='admin'){ document.getElementById('adminPanel').style.display='block'; loadAdminDashboard(); }
+  if(role==='store_owner'){ document.getElementById('storePanel').style.display='block'; loadOwnerStores(); }
+  if(role==='user'){ document.getElementById('userPanel').style.display='block'; loadStoresForUser(); }
+}
+
+// ============ ADMIN FUNCTIONS ============
+async function loadAdminDashboard(){
+  const res = await fetch('/admin/dashboard', { headers:{ Authorization:`Bearer ${token}`}});
+  const data = await res.json();
+  document.getElementById('totalUsers').textContent = data.totalUsers;
+  document.getElementById('totalStores').textContent = data.totalStores;
+  document.getElementById('totalRatings').textContent = data.totalRatings;
+  loadUsers(); loadStoresAdmin(); loadStoreOwners();
+}
+
+async function adminCreateUser(){
+  const name=document.getElementById('adminUserName').value;
+  const email=document.getElementById('adminUserEmail').value;
+  const password=document.getElementById('adminUserPassword').value;
+  const address=document.getElementById('adminUserAddress').value;
+  const role=document.getElementById('adminUserRole').value;
+  const res=await fetch('/admin/users',{
+    method:'POST', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+    body:JSON.stringify({ name,email,password,address,role })
+  });
+  if(res.ok){ alert('User created'); loadUsers(); loadStoreOwners(); }
+  else { const data=await res.json(); alert(data.message); }
+}
+
+async function loadUsers(){
+  const res = await fetch('/admin/users',{ headers:{ Authorization:`Bearer ${token}`}});
+  const users = await res.json();
+  const container=document.getElementById('usersList'); container.innerHTML='';
+  const table=document.createElement('table');
+  table.innerHTML='<tr><th>ID</th><th>Name</th><th>Email</th><th>Address</th><th>Role</th><th>Action</th></tr>';
+  users.forEach(u=>{
+    const row=document.createElement('tr');
+    row.innerHTML=`<td>${u.id}</td><td>${u.name}</td><td>${u.email}</td><td>${u.address}</td><td>${u.role}</td>
+    <td><span class="delete-btn" onclick="deleteUser(${u.id})">Delete</span></td>`;
+    table.appendChild(row);
+  });
+  container.appendChild(table);
+}
+
+async function deleteUser(id){
+  await fetch(`/admin/users/${id}`,{ method:'DELETE', headers:{ Authorization:`Bearer ${token}`}});
+  loadUsers();
+}
+
+async function loadStoreOwners(){
+  const res = await fetch('/admin/users',{ headers:{ Authorization:`Bearer ${token}`}});
+  const users = await res.json();
+  const select=document.getElementById('adminStoreOwner'); select.innerHTML='<option value="">Select Owner</option>';
+  users.filter(u=>u.role==='store_owner').forEach(u=>{
+    const option=document.createElement('option'); option.value=u.id; option.textContent=u.name;
+    select.appendChild(option);
+  });
+}
+
+async function adminCreateStore(){
+  const name=document.getElementById('adminStoreName').value;
+  const email=document.getElementById('adminStoreEmail').value;
+  const address=document.getElementById('adminStoreAddress').value;
+  const owner_id=document.getElementById('adminStoreOwner').value;
+  const res=await fetch('/stores',{
+    method:'POST', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+    body:JSON.stringify({ name,email,address,owner_id })
+  });
+  if(res.ok){ alert('Store created'); loadStoresAdmin(); }
+  else { const data=await res.json(); alert(data.message); }
+}
+
+async function loadStoresAdmin(){
+  const res=await fetch('/stores',{ headers:{ Authorization:`Bearer ${token}`}});
+  const stores=await res.json();
+  const container=document.getElementById('storesListAdmin'); container.innerHTML='';
+  const table=document.createElement('table');
+  table.innerHTML='<tr><th>ID</th><th>Name</th><th>Email</th><th>Address</th><th>Owner</th><th>Ratings</th><th>Actions</th></tr>';
+  stores.forEach(s=>{
+    const ratings=s.Ratings.map(r=>`${r.User.name}: ${r.ratings}`).join(', ');
+    const row=document.createElement('tr');
+    row.innerHTML=`<td>${s.id}</td><td>${s.name}</td><td>${s.email}</td><td>${s.address}</td>
+    <td>${s.owner_id}</td><td>${ratings}</td>
+    <td>
+      <button onclick="editStore(${s.id}, '${s.name}', '${s.email}', '${s.address}')">Edit</button>
+      <button onclick="deleteStore(${s.id})">Delete</button>
+    </td>`;
+    table.appendChild(row);
+  });
+  container.appendChild(table);
+}
+
+async function deleteStore(id){
+  if(!confirm('Are you sure you want to delete this store?')) return;
+  const res=await fetch(`/stores/${id}`,{ method:'DELETE', headers:{ Authorization:`Bearer ${token}`}});
+  if(res.ok){ alert('Store deleted'); loadStoresAdmin(); }
+  else { const data=await res.json(); alert(data.message); }
+}
+
+async function editStore(id, name, email, address){
+  const newName=prompt('Enter new name', name);
+  const newEmail=prompt('Enter new email', email);
+  const newAddress=prompt('Enter new address', address);
+  if(!newName||!newEmail||!newAddress) return alert('All fields required');
+  const res=await fetch(`/stores/${id}`,{
+    method:'PUT',
+    headers:{'Content-Type':'application/json', Authorization:`Bearer ${token}`},
+    body:JSON.stringify({ name:newName, email:newEmail, address:newAddress })
+  });
+  if(res.ok){ alert('Store updated'); loadStoresAdmin(); }
+  else { const data=await res.json(); alert(data.message); }
+}
+
+// ============ STORE OWNER FUNCTIONS ============
+async function loadOwnerStores(){
+  const res=await fetch('/store/dashboard',{ headers:{ Authorization:`Bearer ${token}`}});
+  const stores=await res.json();
+  const container=document.getElementById('storesListOwner'); container.innerHTML='';
+  const table=document.createElement('table');
+  table.innerHTML='<tr><th>ID</th><th>Name</th><th>Email</th><th>Address</th><th>Average Rating</th></tr>';
+  stores.forEach(s=>{
+    const row=document.createElement('tr');
+    row.innerHTML=`<td>${s.id}</td><td>${s.name}</td><td>${s.email}</td><td>${s.address}</td><td>${s.avgRating.toFixed(2)}</td>`;
+    table.appendChild(row);
+  });
+  container.appendChild(table);
+}
+
+// ============ USER FUNCTIONS ============
+async function loadStoresForUser(){
+  const res=await fetch('/stores',{ headers:{ Authorization:`Bearer ${token}`}});
+  const stores=await res.json();
+  const select=document.getElementById('ratingStore'); select.innerHTML='<option value="">Select Store</option>';
+  stores.forEach(s=>{
+    const option=document.createElement('option'); option.value=s.id; option.textContent=s.name; select.appendChild(option);
+  });
+  const container=document.getElementById('storesListUser'); container.innerHTML='';
+  const table=document.createElement('table');
+  table.innerHTML='<tr><th>ID</th><th>Name</th><th>Address</th><th>Ratings</th></tr>';
+  stores.forEach(s=>{
+    const ratings=s.Ratings.map(r=>`${r.User.name}: ${r.ratings}`).join(', ');
+    const row=document.createElement('tr');
+    row.innerHTML=`<td>${s.id}</td><td>${s.name}</td><td>${s.address}</td><td>${ratings}</td>`;
+    table.appendChild(row);
+  });
+  container.appendChild(table);
+}
+
+async function rateStore(){
+  const store_id=document.getElementById('ratingStore').value;
+  const ratings=document.getElementById('ratingValue').value;
+  if(!store_id||!ratings) return alert('Select store and rating');
+  const res=await fetch('/ratings',{
+    method:'POST', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+    body:JSON.stringify({ store_id, ratings })
+  });
+  if(res.ok){ alert('Rating submitted'); document.getElementById('ratingValue').value=''; loadStoresForUser(); }
+  else { const data=await res.json(); alert(data.message); }
+}
+</script>
+</body>
+</html>
