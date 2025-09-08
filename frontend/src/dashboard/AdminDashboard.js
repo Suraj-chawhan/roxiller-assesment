@@ -172,9 +172,7 @@ export default function AdminDashboard({ token }) {
         <p>
           <b>Stores:</b> {stats.totalStores}
         </p>
-        <p>
-          <b>Ratings:</b> {stats.totalRatings}
-        </p>
+        
       </div>
 
       {/* Create User */}
