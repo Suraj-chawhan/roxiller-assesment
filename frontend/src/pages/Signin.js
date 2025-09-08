@@ -7,8 +7,7 @@ export default function Signin({ setToken, setRole }) {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    alert("click")
-    alert(process.env.REACT_APP_API_URL)
+  
     e.preventDefault();
     const res = await fetch(`${process.env.REACT_APP_API_URL}/auth/login`, {
       method: "POST",
